@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# RootRides Invest
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Nigerian investment platform — earn daily returns on real assets.
 
-Currently, two official plugins are available:
+## Monorepo Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+rootrides/
+├── frontend/          React + Vite + TypeScript + Tailwind + Three.js
+├── backend/           FastAPI + Supabase
+├── schema.sql         Run this in Supabase SQL Editor first
+├── render.yaml        Render deploy config (backend)
+└── .gitignore
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Quick Start
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Supabase (Database)
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** → paste the contents of `schema.sql` → **Run**
+3. Copy your **Project URL** and **anon key** from **Project Settings → API**
+
+---
+
+### 2. Backend (FastAPI on Render)
+
+```bash
+cd backend
+cp .env.example .env
+# Fill in SUPABASE_URL, SUPABASE_KEY, FRONTEND_URL
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
+
+**Deploy to Render:**
+- Connect your GitHub repo
+- Render auto-reads `render.yaml` — no config needed
+- Add env vars in the Render dashboard:
+  - `SUPABASE_URL`
+  - `SUPABASE_KEY`
+  - `FRONTEND_URL` → your Vercel URL once deployed
+
+API docs available at `https://your-render-url.onrender.com/docs`
+
+---
+
+### 3. Frontend (React on Vercel)
+
+```bash
+cd frontend
+cp .env.example .env.local
+# Set VITE_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+**Deploy to Vercel:**
+- Import your GitHub repo at [vercel.com](https://vercel.com)
+- Set **Root Directory** → `frontend`
+- Add env var: `VITE_API_URL` → your Render backend URL
+- Deploy
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/plans` | Investment plans |
+| GET | `/api/stats` | Platform stats |
+| GET | `/api/testimonials` | Testimonials |
+| GET | `/api/faq` | FAQ items |
+| POST | `/api/waitlist` | Email signup `{ email, referral_code? }` |
+| GET | `/health` | Health check |
+
+---
+
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | React 19, TypeScript, Vite 7, Tailwind 3 |
+| Animations | Three.js, Framer Motion, Canvas 2D |
+| Backend | FastAPI, Uvicorn |
+| Database | Supabase (PostgreSQL) |
+| Hosting | Vercel (frontend) + Render (backend) |

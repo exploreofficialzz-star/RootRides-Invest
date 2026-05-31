@@ -1,4 +1,14 @@
+import { useEffect, useState } from "react";
 import { useCountUp } from "@/hooks/useCountUp";
+import { api, type PlatformStats } from "@/lib/api";
+
+// ── Fallback while loading ──────────────────────────────────────────────────
+const DEFAULT_STATS: PlatformStats = {
+  total_invested: 2500000000,
+  active_users: 50000,
+  uptime_percent: 99.7,
+  support_label: "24/7",
+};
 
 function StatItem({
   target,
@@ -24,18 +34,24 @@ function StatItem({
 }
 
 export default function StatsBar() {
-  const stats = [
-    { target: 2500000000, prefix: "\u20A6", suffix: "+", label: "Invested" },
-    { target: 50000, prefix: "", suffix: "+", label: "Active Users" },
-    { target: 99.7, prefix: "", suffix: "%", label: "Uptime" },
-    { target: 24, prefix: "", suffix: "/7", label: "Support" },
+  const [stats, setStats] = useState<PlatformStats>(DEFAULT_STATS);
+
+  useEffect(() => {
+    api.getStats().then(setStats).catch(() => {/* keep defaults */});
+  }, []);
+
+  const items = [
+    { target: stats.total_invested,   prefix: "₦", suffix: "+", label: "Invested" },
+    { target: stats.active_users,     prefix: "",  suffix: "+", label: "Active Users" },
+    { target: stats.uptime_percent,   prefix: "",  suffix: "%", label: "Uptime" },
+    { target: 24,                      prefix: "",  suffix: "/7", label: "Support" },
   ];
 
   return (
     <section className="w-full bg-paper py-10" data-section-bg="light">
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((s, i) => (
+          {items.map((s, i) => (
             <StatItem
               key={i}
               target={s.target}
