@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router";
 import WebGLWaveSurface from "@/components/WebGLWaveSurface";
 
 export default function HeroSection() {
@@ -9,7 +10,6 @@ export default function HeroSection() {
     >
       <WebGLWaveSurface />
 
-      {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -43,12 +43,12 @@ export default function HeroSection() {
             daily returns, withdraw monthly.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#plans"
+            <Link
+              to="/auth"
               className="px-8 py-3.5 bg-primary text-white font-medium rounded-2xl hover:opacity-90 hover:-translate-y-px transition-all duration-200 text-base"
             >
               Start Investing
-            </a>
+            </Link>
             <a
               href="#download"
               className="px-8 py-3.5 border border-white/30 text-white font-medium rounded-2xl hover:bg-white/10 transition-all duration-200 text-base"
@@ -58,7 +58,6 @@ export default function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Corner labels */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

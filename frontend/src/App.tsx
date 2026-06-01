@@ -1,39 +1,12 @@
-import { lazy, Suspense } from "react";
-import Header from "@/sections/Header";
-import HeroSection from "@/sections/HeroSection";
-import StatsBar from "@/sections/StatsBar";
-import InvestmentPlans from "@/sections/InvestmentPlans";
-import TickerSection from "@/sections/TickerSection";
-import WhyRootRides from "@/sections/WhyRootRides";
-import ReferralProgram from "@/sections/ReferralProgram";
-import TestimonialsSection from "@/sections/TestimonialsSection";
-import FAQSection from "@/sections/FAQSection";
-import DownloadCTA from "@/sections/DownloadCTA";
-import Footer from "@/sections/Footer";
-
-const CinematicRadialWipe = lazy(
-  () => import("@/components/CinematicRadialWipe")
-);
+import { Routes, Route } from "react-router";
+import Home from "@/pages/Home";
+import AuthPage from "@/pages/AuthPage";
 
 export default function App() {
   return (
-    <>
-      <Suspense fallback={null}>
-        <CinematicRadialWipe />
-      </Suspense>
-      <Header />
-      <main>
-        <HeroSection />
-        <StatsBar />
-        <InvestmentPlans />
-        <TickerSection />
-        <WhyRootRides />
-        <ReferralProgram />
-        <TestimonialsSection />
-        <FAQSection />
-        <DownloadCTA />
-      </main>
-      <Footer />
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/auth" element={<AuthPage />} />
+    </Routes>
   );
 }

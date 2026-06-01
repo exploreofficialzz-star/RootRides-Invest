@@ -54,5 +54,29 @@ class WaitlistEntry(BaseModel):
 
 
 class WaitlistResponse(BaseModel):
-    message: str   # "success" | "already_registered"
+    message: str
     email: str
+
+
+# ── Auth ───────────────────────────────────────────────────────────────────────
+
+class RegisterRequest(BaseModel):
+    phone: str
+    full_name: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    phone: str
+    password: str
+
+
+class UserOut(BaseModel):
+    id: str
+    phone: str
+    full_name: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserOut

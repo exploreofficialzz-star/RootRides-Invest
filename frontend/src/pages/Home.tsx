@@ -1,20 +1,39 @@
-import { useState } from 'react'
-import '../App.css'
+import { lazy, Suspense } from "react";
+import Header from "@/sections/Header";
+import HeroSection from "@/sections/HeroSection";
+import StatsBar from "@/sections/StatsBar";
+import InvestmentPlans from "@/sections/InvestmentPlans";
+import TickerSection from "@/sections/TickerSection";
+import WhyRootRides from "@/sections/WhyRootRides";
+import ReferralProgram from "@/sections/ReferralProgram";
+import TestimonialsSection from "@/sections/TestimonialsSection";
+import FAQSection from "@/sections/FAQSection";
+import DownloadCTA from "@/sections/DownloadCTA";
+import Footer from "@/sections/Footer";
+
+const CinematicRadialWipe = lazy(
+  () => import("@/components/CinematicRadialWipe")
+);
 
 export default function Home() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
+      <Suspense fallback={null}>
+        <CinematicRadialWipe />
+      </Suspense>
+      <Header />
+      <main>
+        <HeroSection />
+        <StatsBar />
+        <InvestmentPlans />
+        <TickerSection />
+        <WhyRootRides />
+        <ReferralProgram />
+        <TestimonialsSection />
+        <FAQSection />
+        <DownloadCTA />
+      </main>
+      <Footer />
     </>
-  )
+  );
 }

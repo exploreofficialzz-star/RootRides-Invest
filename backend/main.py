@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routers import plans, stats, testimonials, faq, waitlist
+from routers import plans, stats, testimonials, faq, waitlist, auth
 
 load_dotenv()
 
@@ -30,13 +30,13 @@ app.include_router(stats.router,        prefix="/api", tags=["Stats"])
 app.include_router(testimonials.router, prefix="/api", tags=["Testimonials"])
 app.include_router(faq.router,          prefix="/api", tags=["FAQ"])
 app.include_router(waitlist.router,     prefix="/api", tags=["Waitlist"])
+app.include_router(auth.router,         prefix="/api", tags=["Auth"])
 
 
 # ── Health ─────────────────────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
 def root():
     return {"status": "ok", "service": "RootRides Invest API"}
-
 
 @app.get("/health", tags=["Health"])
 def health():

@@ -1,7 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RootRides Invest — API Client
-// All backend calls go through this file.
-// Set VITE_API_URL in .env.local (dev) and Vercel env vars (prod).
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string) || "http://localhost:8000";
@@ -47,6 +45,17 @@ export interface WaitlistResponse {
   email: string;
 }
 
+export interface AuthUser {
+  id: string;
+  phone: string;
+  full_name: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function get<T>(path: string): Promise<T> {
@@ -61,17 +70,42 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`API ${res.status}: ${path}`);
-  return res.json() as Promise<T>;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || `API ${res.status}: ${path}`);
+  return data as T;
 }
 
 // ── API surface ───────────────────────────────────────────────────────────────
 
 export const api = {
-  getPlans:        ()                              => get<Plan[]>("/api/plans"),
-  getStats:        ()                              => get<PlatformStats>("/api/stats"),
-  getTestimonials: ()                              => get<Testimonial[]>("/api/testimonials"),
-  getFaq:          ()                              => get<FaqItem[]>("/api/faq"),
-  joinWaitlist:    (email: string, referral?: string) =>
+  // Public data
+  getPlans:        ()                                      => get<Plan[]>("/api/plans"),
+  getStats:        ()                                      => get<PlatformStats>("/api/stats"),
+  getTestimonials: ()                                      => get<Testimonial[]>("/api/testimonials"),
+  getFaq:          ()                                      => get<FaqItem[]>("/api/faq"),
+  joinWaitlist:    (email: string, referral?: string)      =>
     post<WaitlistResponse>("/api/waitlist", { email, referral_code: referral ?? null }),
+
+  // Auth
+  register: (phone: string, full_name: string, password: string) =>
+    post<AuthResponse>("/api/auth/register", { phone, full_name, password }),
+  login: (phone: string, password: string) =>
+    post<AuthResponse>("/api/auth/login", { phone, password }),
+};
+
+// ── Auth helpers ──────────────────────────────────────────────────────────────
+
+export const auth = {
+  getUser: (): AuthUser | null => {
+    try {
+      const raw = localStorage.getItem("rr_user");
+      return raw ? (JSON.parse(raw) as AuthUser) : null;
+    } catch { return null; }
+  },
+  getToken: () => localStorage.getItem("rr_token"),
+  logout: () => {
+    localStorage.removeItem("rr_token");
+    localStorage.removeItem("rr_user");
+  },
+  isLoggedIn: () => !!localStorage.getItem("rr_token"),
 };
