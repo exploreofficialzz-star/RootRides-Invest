@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import Header from "@/sections/Header";
 import HeroSection from "@/sections/HeroSection";
-import TickerSection from "@/sections/TickerSection";
 import WhyRootRides from "@/sections/WhyRootRides";
 import Footer from "@/sections/Footer";
 
@@ -14,7 +13,6 @@ export default function Home() {
       <Header />
       <main>
         <HeroSection />
-        <TickerSection />
         <WhyRootRides />
       </main>
       <Footer />
