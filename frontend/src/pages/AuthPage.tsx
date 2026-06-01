@@ -111,8 +111,15 @@ export default function AuthPage() {
       navigate("/");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
-      setError(msg.includes("already") ? "This phone number is already registered" :
-               msg.includes("Invalid") ? "Incorrect phone number or password" : msg);
+      if (msg.toLowerCase().includes("failed to fetch") || msg.toLowerCase().includes("networkerror")) {
+        setError("Server is waking up — please wait 30 seconds and try again.");
+      } else if (msg.includes("already")) {
+        setError("This phone number is already registered. Try logging in.");
+      } else if (msg.includes("Invalid") || msg.includes("401")) {
+        setError("Incorrect phone number or password.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,6 @@ load_dotenv()
 
 app = FastAPI(
     title="RootRides Invest API",
-    description="Backend API for the RootRides Invest platform",
     version="1.0.0",
 )
 
@@ -18,9 +17,9 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_origins=["*"],          # allow all origins — safe since we have no cookies
+    allow_credentials=False,
+    allow_methods=["*"],          # includes OPTIONS preflight
     allow_headers=["*"],
 )
 
@@ -32,8 +31,6 @@ app.include_router(faq.router,          prefix="/api", tags=["FAQ"])
 app.include_router(waitlist.router,     prefix="/api", tags=["Waitlist"])
 app.include_router(auth.router,         prefix="/api", tags=["Auth"])
 
-
-# ── Health ─────────────────────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
 def root():
     return {"status": "ok", "service": "RootRides Invest API"}
