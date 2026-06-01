@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router";
 import WebGLWaveSurface from "@/components/WebGLWaveSurface";
+import { auth } from "@/lib/api";
 
 export default function HeroSection() {
+  const isLoggedIn = auth.isLoggedIn();
+
   return (
     <section
       className="relative w-full min-h-[100dvh] overflow-hidden"
@@ -39,15 +42,15 @@ export default function HeroSection() {
             className="text-white/70 text-lg mb-8 mx-auto"
             style={{ maxWidth: "520px", lineHeight: 1.7 }}
           >
-            Invest in real assets — Rice, Cement, Farm, Machinery & Cars. Earn
-            daily returns, withdraw monthly.
+            Invest in real assets — Rice, Cement, Farm, Machinery &amp; Cars.
+            Earn daily returns, withdraw monthly.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              to="/auth"
+              to={isLoggedIn ? "/dashboard" : "/auth"}
               className="px-8 py-3.5 bg-primary text-white font-medium rounded-2xl hover:opacity-90 hover:-translate-y-px transition-all duration-200 text-base"
             >
-              Start Investing
+              {isLoggedIn ? "Go to Dashboard" : "Start Investing"}
             </Link>
             <a
               href="#download"
@@ -64,10 +67,7 @@ export default function HeroSection() {
           transition={{ delay: 1.2, duration: 0.6 }}
           className="absolute bottom-8 left-6 md:left-12"
         >
-          <span
-            className="text-xs font-body font-medium uppercase tracking-[0.08em]"
-            style={{ color: "#4a635e" }}
-          >
+          <span className="text-xs font-body font-medium uppercase tracking-[0.08em]" style={{ color: "#4a635e" }}>
             Trusted by 10,000+ Investors
           </span>
         </motion.div>
@@ -77,10 +77,7 @@ export default function HeroSection() {
           transition={{ delay: 1.2, duration: 0.6 }}
           className="absolute bottom-8 right-6 md:right-12"
         >
-          <span
-            className="text-xs font-body font-medium uppercase tracking-[0.08em]"
-            style={{ color: "#4a635e" }}
-          >
+          <span className="text-xs font-body font-medium uppercase tracking-[0.08em]" style={{ color: "#4a635e" }}>
             Nigeria&apos;s Premier Investment Platform
           </span>
         </motion.div>

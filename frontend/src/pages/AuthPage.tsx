@@ -123,7 +123,7 @@ export default function AuthPage() {
 
       localStorage.setItem("rr_token", res.token);
       localStorage.setItem("rr_user", JSON.stringify(res.user));
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       if (msg.toLowerCase().includes("fetch"))
