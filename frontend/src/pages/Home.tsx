@@ -4,7 +4,6 @@ import HeroSection from "@/sections/HeroSection";
 import StatsBar from "@/sections/StatsBar";
 import TickerSection from "@/sections/TickerSection";
 import WhyRootRides from "@/sections/WhyRootRides";
-import ReferralProgram from "@/sections/ReferralProgram";
 import TestimonialsSection from "@/sections/TestimonialsSection";
 import FAQSection from "@/sections/FAQSection";
 import DownloadCTA from "@/sections/DownloadCTA";
@@ -15,16 +14,13 @@ const CinematicRadialWipe = lazy(() => import("@/components/CinematicRadialWipe"
 export default function Home() {
   return (
     <>
-      <Suspense fallback={null}>
-        <CinematicRadialWipe />
-      </Suspense>
+      <Suspense fallback={null}><CinematicRadialWipe /></Suspense>
       <Header />
       <main>
         <HeroSection />
         <StatsBar />
         <TickerSection />
         <WhyRootRides />
-        <ReferralProgram />
         <TestimonialsSection />
         <FAQSection />
         <DownloadCTA />
