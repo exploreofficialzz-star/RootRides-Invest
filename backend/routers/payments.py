@@ -5,14 +5,14 @@ import httpx
 
 from database import supabase
 from auth_utils import get_current_user_id
+from routers.investments import generate_referral_code, credit_referrer_atomically
 
 router = APIRouter()
 
 FLW_SECRET_KEY = os.getenv("FLW_SECRET_KEY", "")
 
 
-# ── Models ────────────────────────────────────────────────────────────────────
-
+# ── Models ────────────────────────────────────────────────────
 class PaymentVerifyRequest(BaseModel):
     transaction_id: int
     tx_ref:         str
@@ -22,21 +22,17 @@ class PaymentVerifyRequest(BaseModel):
     daily_return_naira: int
 
 
-# ── Flutterwave verification ───────────────────────────────────────────────────
-
+# ── Flutterwave verification ───────────────────────────────────
 async def verify_flutterwave(transaction_id: int) -> dict:
     url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
     async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.get(url, headers={"Authorization": f"Bearer {FLW_SECRET_KEY}"})
+        resp = await client.get(
+            url, headers={"Authorization": f"Bearer {FLW_SECRET_KEY}"}
+        )
         return resp.json()
 
 
-def generate_referral_code(user_id: str) -> str:
-    return "RR" + user_id.replace("-", "").upper()[:6]
-
-
-# ── Endpoint ──────────────────────────────────────────────────────────────────
-
+# ── Endpoint ──────────────────────────────────────────────────
 @router.post("/payments/verify")
 async def verify_payment(
     data: PaymentVerifyRequest,
@@ -45,9 +41,8 @@ async def verify_payment(
     if not FLW_SECRET_KEY:
         raise HTTPException(500, "Payment gateway not configured")
 
-    # 1. Verify with Flutterwave API
+    # 1. Verify with Flutterwave
     result = await verify_flutterwave(data.transaction_id)
-
     if result.get("status") != "success":
         raise HTTPException(400, "Payment verification failed with Flutterwave")
 
@@ -56,17 +51,14 @@ async def verify_payment(
     # 2. Validate transaction details
     if tx.get("status") != "successful":
         raise HTTPException(400, f"Payment not successful: {tx.get('status')}")
-
     if tx.get("currency") != "NGN":
         raise HTTPException(400, "Invalid currency — only NGN accepted")
-
     if int(tx.get("amount", 0)) < data.amount_naira:
         raise HTTPException(400, "Payment amount is less than plan amount")
-
     if tx.get("tx_ref") != data.tx_ref:
         raise HTTPException(400, "Transaction reference mismatch")
 
-    # 3. Prevent duplicate processing (same tx_ref)
+    # 3. Prevent duplicate processing (idempotency)
     existing = (
         supabase.table("investments")
         .select("id")
@@ -90,21 +82,21 @@ async def verify_payment(
 
     investment = result_inv.data[0]
 
-    # 5. Generate referral code on first investment
-    user_row = supabase.table("users").select("referral_code, referred_by").eq("id", user_id).single().execute()
+    # 5. Atomic referral activation on first investment
+    user_row = (
+        supabase.table("users")
+        .select("referral_code, referred_by")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
     if not user_row.data.get("referral_code"):
         code = generate_referral_code(user_id)
         supabase.table("users").update({"referral_code": code}).eq("id", user_id).execute()
 
-        # Credit referrer ₦3,000
         ref_by = user_row.data.get("referred_by")
         if ref_by:
-            referrer = supabase.table("users").select("id, referral_earnings").eq("referral_code", ref_by).execute()
-            if referrer.data:
-                current = referrer.data[0].get("referral_earnings") or 0
-                supabase.table("users").update(
-                    {"referral_earnings": current + 3000}
-                ).eq("id", referrer.data[0]["id"]).execute()
+            credit_referrer_atomically(ref_by)
 
     return {
         "message":    "Payment verified and investment created",

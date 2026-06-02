@@ -6,11 +6,17 @@ services:
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    # 2 workers handle concurrent requests without OOM on the free tier (512MB RAM).
+    # Upgrade to `starter` plan and raise --workers to 4 for production traffic.
+    startCommand: gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 60 --keep-alive 5
     envVars:
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_KEY
+      - key: SUPABASE_KEY         # use service_role key so RLS is bypassed by the backend
         sync: false
-      - key: FRONTEND_URL
+      - key: JWT_SECRET           # generate with: python -c "import secrets; print(secrets.token_hex(32))"
+        sync: false
+      - key: FLW_SECRET_KEY       # Flutterwave secret key from dashboard
+        sync: false
+      - key: FRONTEND_URL         # e.g. https://root-rides-invest.vercel.app
         sync: false
