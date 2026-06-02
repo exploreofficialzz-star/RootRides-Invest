@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, useSearchParams } from "react-router";
 import { Eye, EyeOff, ArrowLeft, Phone, Lock, User, Wifi, WifiOff } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -65,6 +65,8 @@ function Field({ label, icon, type = "text", value, onChange, placeholder, error
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referredBy = searchParams.get("ref") || "";
   const [tab, setTab]                 = useState<Tab>("login");
   const [phone, setPhone]             = useState("");
   const [fullName, setFullName]       = useState("");
@@ -118,7 +120,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const res = tab === "signup"
-        ? await api.register(phone.trim(), fullName.trim(), password)
+        ? await api.register(phone.trim(), fullName.trim(), password, referredBy || undefined)
         : await api.login(phone.trim(), password);
 
       localStorage.setItem("rr_token", res.token);
