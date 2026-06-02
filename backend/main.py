@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from routers import plans, stats, testimonials, faq, waitlist, auth, investments, claims
+from routers import plans, stats, testimonials, faq, waitlist, auth, investments, claims, payments
 
 load_dotenv()
 
@@ -24,6 +24,7 @@ app.include_router(waitlist.router,     prefix="/api", tags=["Waitlist"])
 app.include_router(auth.router,         prefix="/api", tags=["Auth"])
 app.include_router(investments.router,  prefix="/api", tags=["Investments"])
 app.include_router(claims.router,       prefix="/api", tags=["Claims"])
+app.include_router(payments.router,     prefix="/api", tags=["Payments"])
 
 @app.get("/")
 def root():

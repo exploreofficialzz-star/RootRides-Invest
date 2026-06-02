@@ -51,18 +51,67 @@ function PlanCard({ plan, onInvest, investing }: { plan: Plan; onInvest: (p: Pla
   );
 }
 
+declare global {
+  interface Window {
+    FlutterwaveCheckout: (config: Record<string, unknown>) => void;
+  }
+}
+
+const FLW_PUBLIC_KEY = (import.meta.env.VITE_FLW_PUBLIC_KEY as string) || "";
+
 function InvestTab({ plans, onInvested }: { plans: Plan[]; onInvested: () => void }) {
   const [investing, setInvesting] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const handleInvest = async (plan: Plan) => {
-    setInvesting(plan.id); setSuccessMsg(""); setErrorMsg("");
-    try {
-      await api.createInvestment(plan.id, plan.name, plan.amount_naira, plan.daily_return_naira);
-      setSuccessMsg(`✓ Invested in ${plan.name}! Your first claim is ready.`);
-      onInvested();
-    } catch (e: unknown) { setErrorMsg(e instanceof Error ? e.message : "Failed"); }
-    finally { setInvesting(null); }
+
+  const handleInvest = (plan: Plan) => {
+    const user = auth.getUser();
+    if (!user) return;
+
+    setSuccessMsg(""); setErrorMsg("");
+    const txRef = `RR-${user.id.slice(0,8)}-${plan.id.slice(0,8)}-${Date.now()}`;
+    const phoneDigits = user.phone.replace(/\D/g, "");
+
+    setInvesting(plan.id);
+
+    window.FlutterwaveCheckout({
+      public_key:      FLW_PUBLIC_KEY,
+      tx_ref:          txRef,
+      amount:          plan.amount_naira,
+      currency:        "NGN",
+      payment_options: "card, banktransfer, ussd",
+      customer: {
+        email:        `${phoneDigits}@rootrides.invest`,
+        phone_number:  user.phone,
+        name:          user.full_name,
+      },
+      customizations: {
+        title:       "RootRides Invest",
+        description: `Investment: ${plan.name}`,
+      },
+      callback: async (response: { status: string; transaction_id: number }) => {
+        if (response.status === "successful") {
+          try {
+            await api.verifyPayment({
+              transaction_id:     response.transaction_id,
+              tx_ref:             txRef,
+              plan_id:            plan.id,
+              plan_name:          plan.name,
+              amount_naira:       plan.amount_naira,
+              daily_return_naira: plan.daily_return_naira,
+            });
+            setSuccessMsg(`✓ Payment confirmed! You're now invested in ${plan.name}. Go to Tasks to claim daily.`);
+            onInvested();
+          } catch (e: unknown) {
+            setErrorMsg(e instanceof Error ? e.message : "Payment received but verification failed. Contact support.");
+          }
+        } else {
+          setErrorMsg("Payment was not completed. Please try again.");
+        }
+        setInvesting(null);
+      },
+      onclose: () => { setInvesting(null); },
+    });
   };
   return (
     <div className="px-4 pb-28">
